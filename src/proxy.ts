@@ -32,7 +32,13 @@ export async function proxy(request: NextRequest) {
   const { data } = await sb.auth.getClaims();
   const path = request.nextUrl.pathname;
   const preview = process.env.NODE_ENV === "development" && request.cookies.get("tms_ui_preview")?.value === "1";
-  const isPublic = path.startsWith("/login") || path.startsWith("/auth/") || path.startsWith("/preview-ui") || preview;
+  const isPublic = path.startsWith("/login") || path.startsWith("/auth/") || path.startsWith("/preview-ui") || path === "/welcome" || preview;
+  // Visitors see the landing page at "/" (the address stays tosstms.com); signed in, it's the app.
+  if (!data?.claims && path === "/" && !preview) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/welcome";
+    return withCookies(NextResponse.rewrite(url), response);
+  }
   // Already signed in and opening the sign-in page: go straight to the page asked for. Only
   // plain page loads: the sign-in form's own POSTs to /login must reach it.
   if (data?.claims && path === "/login" && request.method === "GET") {

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { LogoMark } from "@/components/brand/Logo";
 
 // Login and set-password frame: one rounded dark frame split in two. Left: the company
@@ -29,12 +30,12 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           />
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/25" />
           <div className="relative flex w-full flex-col justify-between p-5 sm:p-8 lg:p-10">
-            <div className="flex items-center gap-3 self-start text-white">
+            <Link href="/" aria-label="TOSS TMS home" className="flex items-center gap-3 self-start text-white">
               <LogoMark className="h-8 w-auto sm:h-10" />
               <span className="rounded-md border border-white/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/80">
                 TMS
               </span>
-            </div>
+            </Link>
             <div className="mt-10">
               <p className="text-3xl font-bold leading-[1.05] tracking-[-0.03em] text-white sm:text-4xl lg:text-5xl">
                 <span className="text-[#f28c38]">Dispatch</span> Every Load, Keep Every Truck Moving.
