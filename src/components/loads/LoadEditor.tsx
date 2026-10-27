@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { PlaceInput } from "@/components/ui/PlaceInput";
 import { Field, Input, Select, Textarea } from "@/components/ui/Field";
 import { Card, CardHeader } from "@/components/ui/Bits";
 import { RateConDrop } from "./RateConDrop";
@@ -514,12 +515,12 @@ export function LoadEditor({ load, onDone }: { load?: Load; onDone?: (l: Load) =
             </div>
             <Field label="Truck empty at" hint={lastDrop && d.deadhead_from !== lastDrop ? `Last drop: ${lastDrop}` : "City, ST or ZIP — deadhead is routed from here"}>
               <div className="flex gap-2">
-                <Input
+                <PlaceInput
                   value={d.deadhead_from}
-                  onChange={(e) => {
+                  onChange={(v) => {
                     dhTouched.current = true;
                     setDhAuto(true);
-                    set({ deadhead_from: e.target.value });
+                    set({ deadhead_from: v });
                   }}
                   placeholder={lastDrop || "e.g. Chicago, IL"}
                   className="flex-1"
