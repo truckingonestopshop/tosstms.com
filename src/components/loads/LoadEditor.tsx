@@ -203,19 +203,25 @@ export function LoadEditor({ load, onDone }: { load?: Load; onDone?: (l: Load) =
   const lastDrop = useMemo(() => {
     if (!d.driver_id && !d.truck_id) return null;
     const prev = loads
-      .filter((l) => (d.driver_id ? l.driver_id === d.driver_id : l.truck_id === d.truck_id) && l.id !== load?.id && l.delivery_date)
-      .sort((a, b) => (b.delivery_date || "").localeCompare(a.delivery_date || ""))[0];
-    return prev ? `${prev.destination_city}, ${prev.destination_state}` : null;
+      .filter((l) => (d.driver_id ? l.driver_id === d.driver_id : l.truck_id === d.truck_id) && l.id !== load?.id && l.destination_city)
+      .sort((a, b) => {
+        const dateA = a.delivery_date || a.pickup_date || a.created_at;
+        const dateB = b.delivery_date || b.pickup_date || b.created_at;
+        return dateB.localeCompare(dateA);
+      })[0];
+    return prev ? [prev.destination_city, prev.destination_state].filter(Boolean).join(", ") : null;
   }, [d.driver_id, d.truck_id, loads, load?.id]);
 
-  // Where the driver/truck is empty: driver's last drop, else truck's location or last drop. Typing wins.
+  // When driver or truck changes, auto-fill where they are empty from their last drop or truck location.
   const truckLoc = truckById(d.truck_id)?.current_location || "";
   useEffect(() => {
-    if (dhTouched.current) return;
     const guess = lastDrop || truckLoc || "";
-    if (guess !== d.deadhead_from) set({ deadhead_from: guess });
+    if (guess) {
+      setDhAuto(true);
+      set({ deadhead_from: guess });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d.driver_id, truckLoc, lastDrop]);
+  }, [d.driver_id, d.truck_id, lastDrop, truckLoc]);
 
   const save = async () => {
     if (!d.company_id) return toast.error("Pick the carrier company.");
