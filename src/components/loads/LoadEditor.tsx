@@ -199,23 +199,23 @@ export function LoadEditor({ load, onDone }: { load?: Load; onDone?: (l: Load) =
     setMilesAuto(!statedMiles);
   };
 
-  // The truck's previous delivery is a good guess for where it will be empty.
+  // The driver or truck's previous delivery is where they will be empty.
   const lastDrop = useMemo(() => {
-    if (!d.truck_id) return null;
+    if (!d.driver_id && !d.truck_id) return null;
     const prev = loads
-      .filter((l) => l.truck_id === d.truck_id && l.id !== load?.id && l.delivery_date)
+      .filter((l) => (d.driver_id ? l.driver_id === d.driver_id : l.truck_id === d.truck_id) && l.id !== load?.id && l.delivery_date)
       .sort((a, b) => (b.delivery_date || "").localeCompare(a.delivery_date || ""))[0];
     return prev ? `${prev.destination_city}, ${prev.destination_state}` : null;
-  }, [d.truck_id, loads, load?.id]);
+  }, [d.driver_id, d.truck_id, loads, load?.id]);
 
-  // Where the truck is empty: its location on file, else its last drop. Typing wins.
+  // Where the driver/truck is empty: driver's last drop, else truck's location or last drop. Typing wins.
   const truckLoc = truckById(d.truck_id)?.current_location || "";
   useEffect(() => {
     if (dhTouched.current) return;
-    const guess = truckLoc || lastDrop || "";
+    const guess = lastDrop || truckLoc || "";
     if (guess !== d.deadhead_from) set({ deadhead_from: guess });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [truckLoc, lastDrop]);
+  }, [d.driver_id, truckLoc, lastDrop]);
 
   const save = async () => {
     if (!d.company_id) return toast.error("Pick the carrier company.");
@@ -513,7 +513,7 @@ export function LoadEditor({ load, onDone }: { load?: Load; onDone?: (l: Load) =
                 />
               </Field>
             </div>
-            <Field label="Truck empty at" hint={lastDrop && d.deadhead_from !== lastDrop ? `Last drop: ${lastDrop}` : "City, ST or ZIP — deadhead is routed from here"}>
+            <Field label={d.driver_id ? "Driver / Truck empty at" : "Truck empty at"} hint={lastDrop && d.deadhead_from !== lastDrop ? `Last drop: ${lastDrop}` : "City, ST or ZIP — deadhead is routed from here"}>
               <div className="flex gap-2">
                 <PlaceInput
                   value={d.deadhead_from}
